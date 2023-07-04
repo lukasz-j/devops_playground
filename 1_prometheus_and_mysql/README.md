@@ -3,7 +3,7 @@
 ## What happens here
 
 - MySQL and WordPress deployments borrowed from official K8s tutorial
-- Prepared Dockerfile which downloads [MySQL Prometheus Exporter from github](https://github.com/prometheus/mysqld_exporter), compiles it and sets as container entrypoint
+- Prepared Dockerfile which downloads [MySQL Prometheus Exporter](https://github.com/prometheus/mysqld_exporter) from GitHub, compiles it and sets as container entrypoint
 - Written k8s deployment which creates the exporter container and connects it to MySQL server
   - Contains also init container which makes sure exporter can access the database server via its own MySQL user account
   - Metrics exposed as a Service
