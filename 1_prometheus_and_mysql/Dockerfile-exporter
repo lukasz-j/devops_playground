@@ -1,0 +1,8 @@
+FROM golang:latest
+
+WORKDIR /opt
+RUN git clone https://github.com/prometheus/mysqld_exporter.git && \
+    cd mysqld_exporter && make build && touch .my.cnf
+
+WORKDIR /opt/mysqld_exporter
+CMD '/opt/mysqld_exporter/mysqld_exporter'

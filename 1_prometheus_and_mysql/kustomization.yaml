@@ -1,0 +1,11 @@
+secretGenerator:
+- name: mysql-passwords
+  envs:
+  - .env.secret # file kept away from repo
+resources:
+  # "lab rats" from the official Kubernetes tutorial:
+  - mysql-deployment.yaml
+  - wordpress-deployment.yaml
+  # my own manifests:
+  - mysqld-exporter.yaml
+  - prometheus.yaml

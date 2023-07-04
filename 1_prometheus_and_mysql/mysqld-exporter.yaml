@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqld-exporter
+  labels:
+    app: mysqld-exporter
+spec:
+  ports:
+    - port: 9104
+      name: mysqld-exporter
+  selector:
+    app: mysqld-exporter
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysqld-exporter-config
+data:
+  mycnf: |
+    [client]
+    user = exporter
+    host = wordpress-mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqld-exporter
+  labels:
+    app: mysqld-exporter
+spec:
+  selector:
+    matchLabels:
+      app: mysqld-exporter
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysqld-exporter
+    spec:
+      containers:
+      - image: mysqld_exporter:latest # locally build from Dockerfile-exporter
+        name: mysqld-exporter
+        imagePullPolicy: Never # ...it won't be there
+        env:
+        - name: MYSQLD_EXPORTER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-passwords
+              key: exporter-password
+        ports:
+        - containerPort: 9104
+          name: mysqld-exporter
+        volumeMounts:
+        - name: config
+          subPath: mycnf
+          mountPath: "/opt/mysqld_exporter/.my.cnf"
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: mysqld-exporter-config
+      initContainers:
+      - image: mysql:8.0
+        name: mysqld-exporter-init-exporter-account
+        env:
+        - name: INIT_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-passwords
+              key: root-password
+        - name: INIT_EXPORTER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-passwords
+              key: exporter-password
+        command: ["sh", "-c", 'mysql -hwordpress-mysql -uroot -p"${INIT_ROOT_PASSWORD}" -e ''SHOW GRANTS FOR `exporter`@`%`''; if [ $? -eq 1 ]; then mysql -hwordpress-mysql -uroot -p"${INIT_ROOT_PASSWORD}" -e "CREATE USER "\`"exporter"\`"@"\`"%"\`" IDENTIFIED WITH mysql_native_password BY ''${INIT_EXPORTER_PASSWORD}''; GRANT PROCESS, REPLICATION CLIENT, SELECT, SUPER ON *.* TO "\`"exporter"\`"@"\`"%"\`; fi']
