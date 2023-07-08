@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  puppet-server:
+    image: puppet-server:1
+    hostname: puppet-server
+    stdin_open: true
+    environment:
+      PUPPET_SERVER_NAME: puppet-server
+    volumes:
+    - "./playground:/etc/puppetlabs/code/environments/playground"
+    - "ssl-server:/etc/puppetlabs/puppet/ssl"
+    - "ssl-server-ca:/etc/puppetlabs/puppetserver/ca"
+  puppet-node1:
+    image: puppet-node:1
+    hostname: puppet-node1
+    # ports:
+    stdin_open: true
+    environment:
+      PUPPET_SERVER_NAME: puppet-server
+    volumes:
+    - "ssl-node1:/etc/puppetlabs/puppet/ssl"
+    ports:
+    - "0.0.0.0:9080:80"
+  puppet-node2:
+    image: puppet-node:1
+    hostname: puppet-node2
+    # ports:
+    stdin_open: true
+    environment:
+      PUPPET_SERVER_NAME: puppet-server
+    volumes:
+    - "ssl-node2:/etc/puppetlabs/puppet/ssl"
+    ports:
+    - "0.0.0.0:9081:80"
+volumes:
+  ssl-server:
+  ssl-server-ca:
+  ssl-node1:
+  ssl-node2:

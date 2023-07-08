@@ -1,0 +1,8 @@
+FROM debian:11
+
+RUN apt update && apt install -y wget iputils-ping procps nano && wget https://apt.puppet.com/puppet8-release-bullseye.deb && \
+    dpkg -i puppet8-release-bullseye.deb && apt update && rm -f puppet8-release-bullseye.deb
+
+ENV PATH="${PATH}:/opt/puppetlabs/bin"
+
+ENTRYPOINT bash

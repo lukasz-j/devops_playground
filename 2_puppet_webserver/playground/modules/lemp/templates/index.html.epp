@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>Hello!</h1>
+        <p>This is handled by the Puppet node <%= $::networking['hostname'] %></p>
+    </body>
+</html>

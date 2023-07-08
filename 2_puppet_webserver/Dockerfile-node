@@ -1,0 +1,9 @@
+FROM puppet-base:1
+
+ENV PUPPET_SERVER_NAME=
+
+RUN apt install -y puppet-agent
+
+ENTRYPOINT puppet config set server "$PUPPET_SERVER_NAME" --section agent && \
+    puppet config set ca_server "$PUPPET_SERVER_NAME" --section agent && \
+    puppet config set environment playground --section agent && bash

@@ -1,0 +1,7 @@
+FROM puppet-base:1
+
+ENV PUPPET_SERVER_NAME=
+
+RUN apt -y install puppetserver
+ENTRYPOINT puppet config set server "$PUPPET_SERVER_NAME" --section main && chown puppet:puppet /etc/puppetlabs/puppetserver/ca && \
+    service puppetserver start && bash
