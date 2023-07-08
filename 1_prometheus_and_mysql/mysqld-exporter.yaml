@@ -3,20 +3,23 @@ kind: Service
 metadata:
   name: mysqld-exporter
   labels:
-    app: mysqld-exporter
+    app: prometheus
+    tier: mysqld-exporter
 spec:
   ports:
     - port: 9104
       name: mysqld-exporter
   selector:
-    app: mysqld-exporter
+    app: prometheus
+    tier: mysqld-exporter
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysqld-exporter-config
 data:
-  mycnf: |
+  my.cnf: |
     [client]
     user = exporter
     host = wordpress-mysql
@@ -26,20 +29,23 @@ kind: Deployment
 metadata:
   name: mysqld-exporter
   labels:
-    app: mysqld-exporter
+    app: prometheus
+    tier: mysqld-exporter
 spec:
   selector:
     matchLabels:
-      app: mysqld-exporter
+      app: prometheus
+      tier: mysqld-exporter
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: mysqld-exporter
+        app: prometheus
+        tier: mysqld-exporter
     spec:
       containers:
-      - image: mysqld_exporter:latest # locally build from Dockerfile-exporter
+      - image: mysqld_exporter:1 # locally build from Dockerfile-exporter
         name: mysqld-exporter
         imagePullPolicy: Never # ...it won't be there
         env:
@@ -53,9 +59,12 @@ spec:
           name: mysqld-exporter
         volumeMounts:
         - name: config
-          subPath: mycnf
+          subPath: my.cnf
           mountPath: "/opt/mysqld_exporter/.my.cnf"
           readOnly: true
+        resources:
+          limits:
+            memory: 100M
       volumes:
       - name: config
         configMap:

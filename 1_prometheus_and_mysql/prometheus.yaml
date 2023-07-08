@@ -4,19 +4,22 @@ metadata:
   name: prometheus
   labels:
     app: prometheus
+    tier: prometheus
 spec:
   ports:
     - port: 9090
       name: prometheus
   selector:
     app: prometheus
+    tier: prometheus
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: prometheus-config
 data:
-  yml: |
+  prometheus.yml: |
     global:
       scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
       evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
@@ -34,28 +37,34 @@ metadata:
   name: prometheus
   labels:
     app: prometheus
+    tier: prometheus
 spec:
   selector:
     matchLabels:
       app: prometheus
+      tier: prometheus
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
         app: prometheus
+        tier: prometheus
     spec:
       containers:
-      - image: prom/prometheus
+      - image: prom/prometheus:v2.45.0
         name: prometheus
         ports:
         - containerPort: 9090
           name: prometheus
         volumeMounts:
         - name: config
-          subPath: yml
+          subPath: prometheus.yml
           mountPath: "/etc/prometheus/prometheus.yml"
           readOnly: true
+        resources:
+          limits:
+            memory: 1G
       volumes:
       - name: config
         configMap:
